@@ -1,4 +1,4 @@
-.PHONY: default all requirements configure ironic ocp_run clean ocp_cleanup ironic_cleanup host_cleanup cache_cleanup registry_cleanup workingdir_cleanup podman_cleanup bell
+.PHONY: default all requirements configure ironic ocp_run clean ocp_cleanup ironic_cleanup host_cleanup cache_cleanup registry_cleanup workingdir_cleanup podman_cleanup bell assisted_deployment_cleanup
 default: requirements configure build_installer ironic ocp_run bell
 
 all: default
@@ -23,7 +23,10 @@ ocp_run:
 gather:
 	./must_gather.sh
 
-clean: ocp_cleanup ironic_cleanup host_cleanup
+clean: ocp_cleanup ironic_cleanup host_cleanup assisted_deployment_cleanup
+
+assisted_deployment_cleanup:
+	./assisted_deployment_cleanup.sh
 
 ocp_cleanup:
 	./ocp_cleanup.sh
