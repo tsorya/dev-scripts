@@ -5,8 +5,11 @@ set -e
 source logging.sh
 source utils.sh
 source common.sh
-source ocp_install_env.sh
-source rhcos.sh
+
+if ! [ "$NODES_PLATFORM" = "assisted" ]; then
+  source ocp_install_env.sh
+  source rhcos.sh
+fi
 
 # Do some PULL_SECRET sanity checking
 if [[ "${OPENSHIFT_RELEASE_IMAGE}" == *"registry.svc.ci.openshift.org"* ]]; then
@@ -19,6 +22,17 @@ fi
 if [[ "${PULL_SECRET}" != *"cloud.openshift.com"* ]]; then
     echo "Please get a valid pull secret for cloud.openshift.com."
     exit 1
+fi
+
+if [ "$NODES_PLATFORM" = "assisted" ]; then
+  source start_assisted_deployment.sh
+  install_env
+  start_full_flow
+  API_VIP=$(network_ip ${ASSISTED_NETWORK:-"test-infra-net"})
+  echo "address=/api.${CLUSTER_DOMAIN}/${API_VIP}" | sudo tee -a /etc/NetworkManager/dnsmasq.d/openshift-${CLUSTER_NAME}.conf
+  echo "listen-address=::1" | sudo tee -a /etc/NetworkManager/dnsmasq.d/openshift-${CLUSTER_NAME}.conf
+  sudo systemctl reload NetworkManager
+  exit 0
 fi
 
 # NOTE: This is equivalent to the external API DNS record pointing the API to the API VIP
