@@ -57,7 +57,7 @@ function wait_for_cluster() {
   echo "Got 3 ready master nodes"
   echo -e "$(kubectl --kubeconfig=$INSTALL_DIR/auth/kubeconfig get nodes)"
 }
-}
+
 
 function create_assisted_cluster() {
   if [ "$INSTALL" == "y" ]; then
