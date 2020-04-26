@@ -48,11 +48,22 @@ function run_assisted_flow_with_install() {
   cp $TEST_INFRA_DIR/build/kubeconfig ocp/${CLUSTER_NAME}/auth/kubeconfig
 }
 
+function wait_for_cluster() {
+  echo "Waiting till we have 3 master"
+  until [ $(kubectl --kubeconfig=$INSTALL_DIR/auth/kubeconfig get nodes | grep master | grep -v NotReady | grep Ready | wc -l) -eq 3 ]; do
+      sleep 5s
+      oc get csr -ojson | jq -r '.items[] | select(.status == {} ) | .metadata.name' | xargs oc adm certificate approve
+  done
+  echo "Got 3 ready master nodes"
+  echo -e "$(kubectl --kubeconfig=$INSTALL_DIR/auth/kubeconfig get nodes)"
+}
+}
+
 function create_assisted_cluster() {
- if [ "$INSTALL" == "y" ]; then
-    run_assisted_flow_with_install
+  if [ "$INSTALL" == "y" ]; then
+     run_assisted_flow_with_install
   else
-    run_assisted_flow
+     run_assisted_flow
   fi
   API_VIP=$(network_ip ${ASSISTED_NETWORK:-"test-infra-net"})
   echo "server=/api.${CLUSTER_DOMAIN}/${API_VIP}" | sudo tee -a /etc/NetworkManager/dnsmasq.d/openshift-${CLUSTER_NAME}.conf
