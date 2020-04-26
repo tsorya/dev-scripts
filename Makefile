@@ -55,5 +55,5 @@ bell:
 	@echo "Done!" $$'\a'
 
 assisted_deployment: requirements configure
-	./assisted_deployment
+	./assisted_deployment.sh
 	$(MAKE) bell
