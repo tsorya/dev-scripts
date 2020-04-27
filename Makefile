@@ -57,3 +57,6 @@ bell:
 assisted_deployment: requirements configure
 	./assisted_deployment.sh
 	$(MAKE) bell
+
+assisted_deployment_clean_vms:
+	./assisted_deployment_utils.sh  destroy_assisted_nodes
