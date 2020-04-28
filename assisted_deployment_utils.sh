@@ -44,11 +44,17 @@ function run_assisted_flow_with_install() {
 }
 
 
+function set_assisted_dns() {
+  API_VIP=$(network_ip ${ASSISTED_NETWORK:-"test-infra-net"})
+  FILENAME=/etc/NetworkManager/dnsmasq.d/openshift-${CLUSTER_NAME}.conf
+  echo "" > $FILENAME
+  echo "server=/api.${CLUSTER_DOMAIN}/${API_VIP}" | sudo tee $FILENAME
+  sudo systemctl reload NetworkManager
+}
+
 function create_assisted_cluster() {
   deploy_assisted_nodes
-  API_VIP=$(network_ip ${ASSISTED_NETWORK:-"test-infra-net"})
-  echo "server=/api.${CLUSTER_DOMAIN}/${API_VIP}" | sudo tee -a /etc/NetworkManager/dnsmasq.d/openshift-${CLUSTER_NAME}.conf
-  sudo systemctl reload NetworkManager
+  set_assisted_dns
   if [ "$INSTALL" == "y" ] && [ "$WAIT_FOR_CLUSTER" == "y" ]; then
     wait_for_assited_cluster
   fi
